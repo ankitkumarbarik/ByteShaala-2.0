@@ -1,0 +1,248 @@
+import {
+  Star,
+  Users,
+  Clock,
+  Globe,
+  Award,
+  Calendar,
+  CheckCircle,
+} from "lucide-react";
+import { useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+import { useDeleteCourseMutation } from "@/actions/adminActions";
+import { useGetCourseByIdQuery } from "@/actions/courseActions";
+import AdditionalInfo from "@/components/course-detail/components/additional-info";
+import CourseContent from "@/components/course-detail/components/course-content";
+import CoursePreview from "@/components/course-detail/components/course-preview";
+import { AuthContext } from "@/context/AuthContext";
+
+const AdminCourseDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const [deleteCourse, { isLoading: isDeleting }] = useDeleteCourseMutation();
+
+  // Fetch course by ID from API
+  const { data: courseDetails, isLoading, error } = useGetCourseByIdQuery(id);
+
+  const course = courseDetails?.data;
+
+  const handleEditCourse = async (course) => {
+    try {
+      navigate(`/admin/courses/edit/${course.slug}`);
+      toast.success("Redirecting to edit course...");
+    } catch (error) {
+      toast.error("Failed to navigate to edit course");
+    }
+  };
+
+  const handleManageCurriculum = (course) => {
+    navigate(`/admin/courses/${course.slug}/curriculum`);
+  };
+
+  const handleDeleteCourse = async (course) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this course? This action cannot be undone."
+      )
+    ) {
+      try {
+        await deleteCourse(course._id).unwrap();
+        toast.success("Course deleted successfully");
+        navigate("/admin/courses");
+      } catch (error) {
+        toast.error("Failed to delete course");
+        console.error("Delete course error:", error);
+      }
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading course...</div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-lg mb-2">Course not found</div>
+          <p className="text-gray-500">
+            {error?.data?.message ||
+              "The course you're looking for doesn't exist."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no course data
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-400 text-lg mb-2">Course not found</div>
+          <p className="text-gray-500">
+            The course you&apos;re looking for doesn&apos;t exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen text-white">
+      {/* Hero Section */}
+      <div className="bg-gray-900 py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Left Content */}
+            <div className="lg:col-span-2">
+              <div className="mb-4">
+                <span className="text-blue-400 text-sm font-medium">
+                  {course?.category}
+                </span>
+              </div>
+
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                {course?.title}
+              </h1>
+
+              <p className="text-gray-300 text-lg mb-6 leading-relaxed">
+                {course?.description}
+              </p>
+
+              {/* Course Stats */}
+              <div className="flex flex-wrap items-center gap-6 mb-6">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${i < Math.floor(course?.averageRating) ? "text-yellow-400 fill-current" : "text-gray-400"}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-yellow-400 font-semibold">
+                    {course?.averageRating}
+                  </span>
+                  <span className="text-gray-400">
+                    ({course?.reviews?.length} reviews)
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>{course?.totalEnrollments} students</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4" />
+                  <span>{course?.duration}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Globe className="w-4 h-4" />
+                  <span>{course?.language}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Award className="w-4 h-4" />
+                  <span>{course?.level}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    Updated {new Date(course?.updatedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <span className="text-gray-400">Created by </span>
+                <span className="text-blue-400 font-semibold">
+                  {"Admin"}
+                  {/* {course?.instructor} */}
+                </span>
+              </div>
+            </div>
+
+            {/* Right Sidebar - Admin Course Preview */}
+            <div className="lg:col-span-1">
+              <CoursePreview
+                course={course}
+                isAdmin={true}
+                onManageCurriculum={handleManageCurriculum}
+                onEditCourse={handleEditCourse}
+                onDeleteCourse={handleDeleteCourse}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* What You'll Learn */}
+            <div className="bg-gray-900 rounded-lg p-6">
+              <h3 className="text-2xl font-bold mb-6">
+                What students will learn
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {course.learningPoints?.map((item, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Course Content */}
+            <CourseContent course={course} />
+
+            {/* Requirements */}
+            <div className="bg-gray-900 rounded-lg p-6">
+              <h3 className="text-2xl font-bold mb-6">Requirements</h3>
+              <ul className="space-y-3">
+                {course.requirements?.map((requirement, index) => (
+                  <li key={index} className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <span className="text-gray-300">{requirement}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Admin Note - No Reviews Section */}
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-xl font-bold mb-3 text-orange-400">
+                Admin View
+              </h3>
+              <p className="text-gray-300">
+                You are viewing this course as an administrator. Student reviews
+                and enrollment features are not displayed in admin view.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Sidebar - Additional Info */}
+          <div className="lg:col-span-1">
+            <AdditionalInfo course={course} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminCourseDetails;

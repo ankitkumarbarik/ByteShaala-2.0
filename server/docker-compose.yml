@@ -1,0 +1,190 @@
+# This file tells Docker "start all these services together"
+# whenever we create compose file we don't need to create network manually by default they are referencing each other.
+version: '3.8'
+
+services:
+  mongodb:
+    image: "mongo"
+    container_name: mongo-container  # name of container
+    ports:
+      - 27017:27017  # port mapping
+    volumes:
+      - mongodb_data:/data/db  # attach volume
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express-container
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASS}
+    depends_on:
+      - mongodb
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq-container
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway-container
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    depends_on:
+      - auth-service
+      - user-service
+    volumes:
+      # Mount source code for hot reloading
+      - ./api-gateway/src:/app/src
+      - ./api-gateway/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      PORT: ${GATEWAY_PORT}
+      AUTH_SERVICE: "http://auth-service:${AUTH_PORT}"
+      USER_SERVICE: "http://user-service:${USER_PORT}"
+      COURSE_SERVICE: "http://course-service:${COURSE_PORT}"
+      CART_SERVICE: "http://cart-service:${CART_PORT}"
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service-container
+    ports:
+      - ${AUTH_PORT}:${AUTH_PORT}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+    volumes:
+      # Mount source code for hot reloading
+      - ./auth-service/src:/app/src
+      - ./auth-service/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      MONGODB_URI: ${AUTH_MONGO_URI}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      PORT: ${AUTH_PORT}
+      NODE_ENV: ${NODE_ENV}
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET}
+      ACCESS_TOKEN_EXPIRY: ${ACCESS_TOKEN_EXPIRY}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+  user-service:
+    build: ./user-service
+    container_name: user-service-container
+    ports:
+      - ${USER_PORT}:${USER_PORT}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+    volumes:
+      # Mount source code for hot reloading
+      - ./user-service/src:/app/src
+      - ./user-service/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      MONGODB_URI: ${USER_MONGO_URI}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      PORT: ${USER_PORT}
+      NODE_ENV: ${NODE_ENV}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      AUTH_SERVICE: "http://auth-service:${AUTH_PORT}"
+      COURSE_SERVICE: "http://course-service:${COURSE_PORT}"
+
+  course-service:
+    build: ./course-service
+    container_name: course-service-container
+    ports:
+      - ${COURSE_PORT}:${COURSE_PORT}
+    depends_on:
+      mongodb:
+        condition: service_started
+    volumes:
+      # Mount source code for hot reloading
+      - ./course-service/src:/app/src
+      - ./course-service/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      MONGODB_URI: ${COURSE_MONGO_URI}
+      PORT: ${COURSE_PORT}
+      NODE_ENV: ${NODE_ENV}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      USER_SERVICE: "http://user-service:${USER_PORT}"
+      CART_SERVICE: "http://cart-service:${CART_PORT}"
+
+  cart-service:
+    build: ./cart-service
+    container_name: cart-service-container
+    ports:
+      - ${CART_PORT}:${CART_PORT}
+    depends_on:
+      mongodb:
+        condition: service_started
+    volumes:
+      # Mount source code for hot reloading
+      - ./cart-service/src:/app/src
+      - ./cart-service/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      MONGODB_URI: ${CART_MONGO_URI}
+      PORT: ${CART_PORT}
+      NODE_ENV: ${NODE_ENV}
+      GATEWAY_URL: "http://api-gateway:${GATEWAY_PORT}"
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service-container
+    ports:
+      - ${NOTIFICATION_PORT}:${NOTIFICATION_PORT}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      # Mount source code for hot reloading
+      - ./notification-service/src:/app/src
+      - ./notification-service/package.json:/app/package.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      PORT: ${NOTIFICATION_PORT}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}
+      APP_GMAIL: ${APP_GMAIL}
+      APP_PASSWORD: ${APP_PASSWORD}
+
+volumes:
+  mongodb_data:
