@@ -1,0 +1,13 @@
+{
+  "name": "byteshaala2.0",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/server.js",
+    "start": "node server.js"
+  },
+  "author": "Ankit Kumar Barik",
+  "license": "ISC",
+  "description": ""
+}
