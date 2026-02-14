@@ -14,7 +14,7 @@ const refreshToken = getCookie("refToken");
 
 // Base query configuration
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:8888/api/v1", // Replace with your actual API base URL
+  baseUrl: import.meta.env.VITE_API_BASE_URL, // Replace with your actual API base URL
   prepareHeaders: (headers, { getState }) => {
     // Get the token from the auth state
     const token = getState().auth.token || getCookie("token");
