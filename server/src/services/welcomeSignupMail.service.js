@@ -9,9 +9,10 @@ const welcomeSignupMail = async (firstName, lastName, email) => {
             "./src/mails/templates/welcomeSignupMail.html",
             "utf-8"
         );
+        const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || "http://localhost:5173";
         const finalHtml = htmlContent
             .replace("{{fullName}}", fullName)
-            .replace("{{dashboardLink}}", "http://localhost:5173/");
+            .replace("{{dashboardLink}}", `${FRONTEND_BASE_URL}`);
 
         const mailOptions = {
             from: {
