@@ -16,7 +16,7 @@ import {
     reviewSchema,
 } from "../validations/course.validation.js";
 import upload from "../middlewares/multer.middleware.js";
-import attachUser from "../middlewares/attachUser.middleware.js";
+import verifyAuthentication from "../middlewares/authentication.middleware.js";
 import verifyAuthorization from "../middlewares/authorization.middleware.js";
 import ROLES from "../config/role.js";
 
@@ -25,7 +25,7 @@ const router = Router();
 router
     .route("/create-course")
     .post(
-        attachUser,
+        verifyAuthentication,
         verifyAuthorization(ROLES.ADMIN),
         upload.single("thumbnail"),
         createCourse
@@ -43,7 +43,7 @@ router
 router
     .route("/update-course/:slug")
     .put(
-        attachUser,
+        verifyAuthentication,
         verifyAuthorization(ROLES.ADMIN),
         upload.single("thumbnail"),
         validate(updateCourseSchema),
@@ -52,7 +52,7 @@ router
 
 router
     .route("/delete-course/:courseId")
-    .delete(attachUser, verifyAuthorization(ROLES.ADMIN), deleteCourse);
+    .delete(verifyAuthentication, verifyAuthorization(ROLES.ADMIN), deleteCourse);
 
 router.route("/get-all-courses").get(getAllCourses);
 
@@ -66,7 +66,7 @@ router.route("/get-course-by-id/:courseId").get(getCourseByObjectId);
 // add reviews
 router
     .route("/add-reviews/:courseId")
-    .post(attachUser, validate(reviewSchema), addReviews);
+    .post(verifyAuthentication, validate(reviewSchema), addReviews);
 
 // get all reviews
 router.route("/get-all-reviews").get(getAllReviews);

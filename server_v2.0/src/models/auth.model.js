@@ -56,16 +56,12 @@ const authSchema = new Schema(
   { timestamps: true }
 );
 
-authSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(this.password, salt);
-    this.password = hash;
-    next();
-  } catch (error) {
-    next(error);
-  }
+authSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+
+  const salt = await bcrypt.genSalt(10);
+  const hash = await bcrypt.hash(this.password, salt);
+  this.password = hash;
 });
 
 authSchema.methods.comparePassword = async function (password) {

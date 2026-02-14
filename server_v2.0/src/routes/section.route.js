@@ -4,7 +4,7 @@ import {
   deleteSection,
   getSectionsByCourse,
 } from "../controllers/section.controller.js";
-import attachUser from "../middlewares/attachUser.middleware.js";
+import verifyAuthentication from "../middlewares/authentication.middleware.js";
 import verifyAuthorization from "../middlewares/authorization.middleware.js";
 import ROLES from "../config/role.js";
 
@@ -12,11 +12,11 @@ const router = Router();
 
 router
   .route("/:courseId/sections")
-  .post(attachUser, verifyAuthorization(ROLES.ADMIN), createSection)
+  .post(verifyAuthentication, verifyAuthorization(ROLES.ADMIN), createSection)
   .get(getSectionsByCourse);
 
 router
   .route("/sections/:sectionId")
-  .delete(attachUser, verifyAuthorization(ROLES.ADMIN), deleteSection);
+  .delete(verifyAuthentication, verifyAuthorization(ROLES.ADMIN), deleteSection);
 
 export default router;

@@ -218,13 +218,13 @@ export const deleteCourse = asyncHandler(async (req, res) => {
   await axios.patch(
     `${process.env.APP_SERVICE}/api/v1/user/remove-enrolled-course`,
     { courseId },
-    { headers: { "x-user-data": req.headers["x-user-data"] } }
+    { headers: { Authorization: req.header("Authorization") } }
   );
 
   await axios.patch(
     `${process.env.APP_SERVICE}/api/v1/cart/remove-course`,
     { courseId },
-    { headers: { "x-user-data": req.headers["x-user-data"] } }
+    { headers: { Authorization: req.header("Authorization") } }
   );
 
   return res.status(200).json(new ApiResponse(200, {}, "course deleted"));
@@ -248,19 +248,21 @@ export const getAllCourses = asyncHandler(async (req, res) => {
   }
 
   // Check if user is authenticated and get enrollment status
+  const authHeader = req.header("Authorization");
+
   let userEnrolledCourses = [];
   console.log(
-    "x-user-data header:",
-    req.headers["x-user-data"] ? "Present" : "Missing"
+    "Authorization header:",
+    authHeader ? "Present" : "Missing"
   );
 
-  if (req.headers["x-user-data"]) {
+  if (authHeader) {
     try {
       const { data } = await axios.get(
         `${process.env.APP_SERVICE}/api/v1/user/current-user`,
         {
           headers: {
-            "x-user-data": req.headers["x-user-data"],
+            Authorization: authHeader,
           },
         }
       );
@@ -349,13 +351,15 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
   let isAdmin = false;
   let isEnrolled = false;
 
-  if (req.headers["x-user-data"]) {
+  const authHeader = req.header("Authorization");
+
+  if (authHeader) {
     try {
       const { data } = await axios.get(
         `${process.env.APP_SERVICE}/api/v1/user/current-user`,
         {
           headers: {
-            "x-user-data": req.headers["x-user-data"],
+            Authorization: authHeader,
           },
         }
       );
