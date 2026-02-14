@@ -21,7 +21,7 @@ const reviewSchema = new Schema(
             trim: true,
         },
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 // course schema
@@ -53,8 +53,8 @@ const courseSchema = new Schema(
             type: String,
             required: [true, "thumbnail is required"],
         },
-        thumbnailPublicId: { 
-            type: String
+        thumbnailPublicId: {
+            type: String,
         },
         price: {
             type: Number,
@@ -130,15 +130,14 @@ const courseSchema = new Schema(
         },
         reviews: [reviewSchema],
     },
-    { timestamps: true }
+    { timestamps: true },
 );
 
 // Pre-save hook for auto slug
-courseSchema.pre("save", function (next) {
+courseSchema.pre("save", async function () {
     if (this.isModified("title")) {
         this.slug = slugify(this.title.trim(), { lower: true, strict: true });
     }
-    next();
 });
 
 const Course = model("Course", courseSchema);

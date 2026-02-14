@@ -11,6 +11,7 @@ import User from "../models/user.model.js";
 import axios from "axios";
 import dotenv from "dotenv";
 import serverConfig from "../config/server.config.js";
+import { updateAccountDetailsSchema } from "../validations/user.validation.js";
 
 dotenv.config();
 
@@ -46,6 +47,13 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
 export const updateAccountDetails = asyncHandler(async (req, res) => {
     // Parse JSON payload from form-data
     const payloadObj = JSON.parse(req.body.payloadObj || "{}");
+
+    // Validate payloadObj
+    const { error } = updateAccountDetailsSchema.validate(payloadObj);
+    if (error) {
+        throw new ApiError(400, error.details.map((d) => d.message).join(", "));
+    }
+
     const { firstName, lastName, avatarUrl } = payloadObj;
 
     let avatarLocalPath = req.file?.buffer;

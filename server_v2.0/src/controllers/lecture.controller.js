@@ -29,6 +29,10 @@ export const addLecture = asyncHandler(async (req, res) => {
         throw new ApiError(400, "video file or url is required");
     }
 
+    const parsedIsPreviewFree =
+        isPreviewFree === true ||
+        isPreviewFree === "true";
+
     const lecture = await Lecture.create({
         courseId: section.courseId,
         sectionId,
@@ -36,7 +40,7 @@ export const addLecture = asyncHandler(async (req, res) => {
         order: order || 1,
         videoUrl: finalVideoUrl,
         videoPublicId,
-        isPreviewFree: Boolean(isPreviewFree),
+        isPreviewFree: parsedIsPreviewFree,
     });
 
     return res.status(201).json(new ApiResponse(201, lecture, "lecture added"));

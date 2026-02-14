@@ -20,16 +20,15 @@ const router = Router();
 
 router
     .route("/change-password")
-    .patch(verifyAuthentication, validate(changeCurrentPasswordSchema), changeCurrentPassword);
+    .patch(
+        verifyAuthentication,
+        validate(changeCurrentPasswordSchema),
+        changeCurrentPassword,
+    );
 
 router
     .route("/update-account")
-    .patch(
-        verifyAuthentication,
-        upload.single("avatar"),
-        validate(updateAccountDetailsSchema),
-        updateAccountDetails
-    );
+    .patch(verifyAuthentication, upload.single("avatar"), updateAccountDetails);
 
 router.route("/current-user").get(verifyAuthentication, getCurrentUser);
 
@@ -37,10 +36,16 @@ router.route("/delete-user/:userId").delete(verifyAuthentication, deleteUser);
 
 router.route("/all-users").get(verifyAuthentication, getAllUsers);
 
-router.route("/add-purchase-course").post(verifyAuthentication, addPurchaseCourse);
+router
+    .route("/add-purchase-course")
+    .post(verifyAuthentication, addPurchaseCourse);
 
 // router.route("/get-user/:userId").get(getUserById);
 
-router.patch("/remove-enrolled-course", verifyAuthentication, removeEnrolledCourse);
+router.patch(
+    "/remove-enrolled-course",
+    verifyAuthentication,
+    removeEnrolledCourse,
+);
 
 export default router;
