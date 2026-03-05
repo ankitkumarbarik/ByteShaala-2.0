@@ -9,7 +9,10 @@ import {
 import Course from "../models/course.model.js";
 import axios from "axios";
 import dotenv from "dotenv";
-import { createCourseSchema } from "../validations/course.validation.js";
+import {
+    createCourseSchema,
+    updateCourseSchema,
+} from "../validations/course.validation.js";
 import Lecture from "../models/lecture.model.js";
 import Section from "../models/section.model.js";
 import jwt from "jsonwebtoken";
@@ -116,6 +119,14 @@ export const createCourse = asyncHandler(async (req, res) => {
 export const updateCourse = asyncHandler(async (req, res) => {
     const { slug } = req.params;
     const payloadObj = JSON.parse(req.body.payloadObj || "{}");
+
+    const { error, value } = updateCourseSchema.validate(payloadObj, {
+        abortEarly: false,
+    });
+
+    if (error) {
+        throw new ApiError(400, error.details.map((e) => e.message).join(", "));
+    }
 
     const {
         title,

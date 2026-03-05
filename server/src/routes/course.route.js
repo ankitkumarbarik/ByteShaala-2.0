@@ -28,7 +28,7 @@ router
         verifyAuthentication,
         verifyAuthorization(ROLES.ADMIN),
         upload.single("thumbnail"),
-        createCourse
+        createCourse,
     );
 // router
 //   .route("/create-course")
@@ -46,13 +46,16 @@ router
         verifyAuthentication,
         verifyAuthorization(ROLES.ADMIN),
         upload.single("thumbnail"),
-        validate(updateCourseSchema),
-        updateCourse
+        updateCourse,
     );
 
 router
     .route("/delete-course/:courseId")
-    .delete(verifyAuthentication, verifyAuthorization(ROLES.ADMIN), deleteCourse);
+    .delete(
+        verifyAuthentication,
+        verifyAuthorization(ROLES.ADMIN),
+        deleteCourse,
+    );
 
 router.route("/get-all-courses").get(getAllCourses);
 

@@ -53,9 +53,10 @@ const UserListPage = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        const response = await deleteUser(userId).unwrap();
+        await deleteUser(userId).unwrap();
         toast.success("User deleted successfully");
-      } catch (error) {
+      } catch (err) {
+        console.error("Delete user error:", err);
         toast.error("Failed to delete user");
       }
     }
@@ -283,10 +284,18 @@ const UserListPage = () => {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-bold text-white">
-                              {user.firstName?.charAt(0).toUpperCase()}
-                            </span>
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {user?.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt="User Avatar"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-sm font-bold text-white">
+                                {user.firstName?.charAt(0).toUpperCase()}
+                              </span>
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-white">

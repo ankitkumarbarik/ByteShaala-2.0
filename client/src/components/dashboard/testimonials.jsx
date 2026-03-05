@@ -31,8 +31,16 @@ const Testimonials = ({ reviews }) => {
               className="bg-gray-800 rounded-lg p-6 border border-gray-700"
             >
               <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  {getUserInitials(review.userData)}
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-4 overflow-hidden flex-shrink-0">
+                  {review.userData?.avatar ? (
+                    <img
+                      src={review.userData.avatar}
+                      alt={getFullName(review.userData)}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getUserInitials(review.userData)
+                  )}
                 </div>
                 <div>
                   <h4 className="text-white font-semibold">

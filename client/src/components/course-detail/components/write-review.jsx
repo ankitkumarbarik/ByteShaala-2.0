@@ -170,8 +170,16 @@ const WriteReview = ({ isAuthenticated, isOwned, course }) => {
               {console.log("rrrrrrrr", review)}
               <div className="flex items-start space-x-3">
                 {/* User Avatar */}
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-medium flex-shrink-0">
-                  {getUserInitials(review.userData)}
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-medium flex-shrink-0 overflow-hidden">
+                  {review.userData?.avatar ? (
+                    <img
+                      src={review.userData.avatar}
+                      alt={getFullName(review.userData)}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getUserInitials(review.userData)
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

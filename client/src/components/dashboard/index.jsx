@@ -81,8 +81,14 @@ const Dashboard = () => {
       {currentUser && (
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {currentUser?.firstName && currentUser?.lastName ? (
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+              {currentUser?.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt="User Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : currentUser?.firstName && currentUser?.lastName ? (
                 `${currentUser.firstName[0]}${currentUser.lastName[0]}`
               ) : (
                 <User className="w-8 h-8" />
