@@ -30,8 +30,7 @@ export const addLecture = asyncHandler(async (req, res) => {
     }
 
     const parsedIsPreviewFree =
-        isPreviewFree === true ||
-        isPreviewFree === "true";
+        isPreviewFree === true || isPreviewFree === "true";
 
     const lecture = await Lecture.create({
         courseId: section.courseId,
@@ -65,8 +64,11 @@ export const updateLecture = asyncHandler(async (req, res) => {
 
     if (title) lecture.title = title.trim();
     if (order) lecture.order = order;
-    if (typeof isPreviewFree !== "undefined")
-        lecture.isPreviewFree = Boolean(isPreviewFree);
+    if (typeof isPreviewFree !== "undefined") {
+        const parsedIsPreviewFree =
+            isPreviewFree === true || isPreviewFree === "true";
+        lecture.isPreviewFree = parsedIsPreviewFree;
+    }
 
     if (videoUrl?.trim()) {
         if (lecture.videoPublicId)
